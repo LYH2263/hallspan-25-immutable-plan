@@ -32,3 +32,12 @@ class SeatPlan(Base):
     hall_id: Mapped[int] = mapped_column(ForeignKey("halls.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     result_json: Mapped[str] = mapped_column(Text, default="{}")
+
+    # 生成快照参数：只读校验据此判定「现网最小距」与历史行生成时是否漂移。
+    gen_rows: Mapped[int] = mapped_column(Integer, default=0)
+    gen_cols: Mapped[int] = mapped_column(Integer, default=0)
+    gen_min_dist: Mapped[int] = mapped_column(Integer, default=0)
+
+    # 追加式生命周期：active -> voided 只能通过作废标记翻转，result_json 永不 UPDATE。
+    status: Mapped[str] = mapped_column(String(16), default="active")
+    voided_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

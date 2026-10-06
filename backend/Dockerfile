@@ -1,10 +1,15 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+FROM python:3.11-slim
 
+WORKDIR /app
 
-class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env")
-    database_url: str = "postgresql+psycopg2://hallspan:hallspan@localhost:5450/hallspan"
-    seed_on_empty: bool = True
+ENV PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
 
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-settings = Settings()
+COPY . .
+
+EXPOSE 9900
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "9900"]

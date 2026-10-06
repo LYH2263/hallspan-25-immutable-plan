@@ -4,21 +4,35 @@ import { api } from '../api'
 const data = ref<any>(null)
 const candidates = ref<any[]>([])
 const violKeys = ref<Set<string>>(new Set())
-async function run() {
-  data.value = await api('/seating/run?hall_id=1', { method: 'POST' })
-  try {
-    const v = await api('/seating/violations?hall_id=1')
-    const keys = new Set<string>()
-    for (const x of v.violations || []) {
-      if (x.a_id != null) keys.add(String(x.a_id))
-      if (x.b_id != null) keys.add(String(x.b_id))
-    }
-    violKeys.value = keys
-  } catch { violKeys.value = new Set() }
+
+function collectViolKeys(body: any) {
+  const keys = new Set<string>()
+  for (const x of body.violations || []) {
+    if (x.a_id != null) keys.add(String(x.a_id))
+    if (x.b_id != null) keys.add(String(x.b_id))
+  }
+  return keys
 }
+
+// 写入口：点击只新增一条方案行（可插不可改），用其落库正文渲染。
+async function run() {
+  const body = await api('/seating/plans?hall_id=1', { method: 'POST' })
+  data.value = body
+  violKeys.value = collectViolKeys(body)
+}
+
+// 只读：挂载时拉取最新生效方案的冻结正文，不修改、不新增。
+async function loadLatest() {
+  const body = await api('/seating/plans/latest?hall_id=1')
+  if (body.plan_id != null) {
+    data.value = body
+    violKeys.value = collectViolKeys(body)
+  }
+}
+
 onMounted(async () => {
   candidates.value = await api('/candidates')
-  await run()
+  await loadLatest()
 })
 const gridStyle = computed(() => data.value ? ({ gridTemplateColumns: `repeat(${data.value.cols}, 72px)` }) : {})
 const cells = computed(() => {
