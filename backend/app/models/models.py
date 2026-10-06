@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
 
@@ -27,8 +27,11 @@ class Candidate(Base):
     paper_id: Mapped[int] = mapped_column(ForeignKey("paper_sets.id"))
 
 class SeatPlan(Base):
+    """排座方案行。写入口只可 INSERT 新行或置 voided 作废标记;
+    result_json 正文落库后永不 UPDATE(只读校验入口更是完全不写库)。"""
     __tablename__ = "seat_plans"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     hall_id: Mapped[int] = mapped_column(ForeignKey("halls.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     result_json: Mapped[str] = mapped_column(Text, default="{}")
+    voided: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)

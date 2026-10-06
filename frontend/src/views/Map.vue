@@ -5,7 +5,7 @@ const data = ref<any>(null)
 const candidates = ref<any[]>([])
 const violKeys = ref<Set<string>>(new Set())
 async function run() {
-  data.value = await api('/seating/run?hall_id=1', { method: 'POST' })
+  data.value = await api('/seating/plans?hall_id=1', { method: 'POST' })
   try {
     const v = await api('/seating/violations?hall_id=1')
     const keys = new Set<string>()

@@ -80,8 +80,10 @@ def find_violations(rows: int, cols: int, min_dist: int, assigns: list[SeatAssig
                                        f"同试卷套 {a.paper_id} 四邻相邻"))
     return viols
 
-def plan_to_dict(assigns: list[SeatAssign], unplaced: list[dict], viols: list[Violation], rows: int, cols: int) -> dict:
+def plan_to_dict(assigns: list[SeatAssign], unplaced: list[dict], viols: list[Violation], rows: int, cols: int, min_dist: int) -> dict:
     return {
+        # 生成时刻参数快照:落库后不再变,供只读校验入口与现网参数比对判漂移
+        "params": {"rows": rows, "cols": cols, "min_manhattan": min_dist},
         "rows": rows,
         "cols": cols,
         "assignments": [asdict(a) for a in assigns],
